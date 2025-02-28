@@ -1,63 +1,91 @@
 import { useState } from 'react';
-import {NumberInput, TextInput, Button, Group, Box, Stepper, Title, Text, NativeSelect, Center, Flex} from '@mantine/core';
-import {DatePicker, TimeInput} from '@mantine/dates';
+import {
+    NumberInput,
+    TextInput,
+    Button,
+    Group,
+    Box,
+    Stepper,
+    Title,
+    NativeSelect,
+    Center,
+    Flex,
+    useMantineTheme,
+} from '@mantine/core';
+import { DatePicker, TimeInput } from '@mantine/dates';
+import { useForm } from '@mantine/form';
 import '@mantine/dates/styles.css';
+
 interface PillFormProps {
     onSave: (data: any) => void;
 }
 
 export function PillForm({ onSave }: PillFormProps) {
     const [activeStep, setActiveStep] = useState(0);
+    const [startToday, setStartToday] = useState<boolean | null>(null);
 
-    const [startToday, setStartToday] = useState<boolean | null>(null); // Track if user starts today
-    const [startDate, setStartDate] = useState<Date | null>(null); // Track selected start date
-    const [startTime, setStartTime] = useState<Date | null>(null); // Track selected start time
-
-    const [formData, setFormData] = useState({
-        startDate: null as Date | null,
-        startTime: null as Date | null,
-        endDate: null as Date | null,
-        totalPills: null as number | null,
-        pillName: '',
-        frequency: 24,
+    // Initialize useForm
+    const form = useForm({
+        initialValues: {
+            pillName: '',
+            startDate: null as Date | null,
+            startTime: null as Date | null,
+            frequency: '',
+            durationDays: 0,
+        },
+        validate: {
+            pillName: (value) => (value.trim().length > 0 ? null : 'Pill name is required'),
+            startDate: (value, values) => {
+                if (startToday === false && !value) return 'Start date is required';
+                return null;
+            },
+            startTime: (value) => (value ? null : 'Start time is required'),
+            frequency: (value) => (value ? null : 'Frequency is required'),
+            durationDays: (value) => (value > 0 ? null : 'Duration must be greater than 0'),
+        },
     });
 
-    function nextStep() {
-        setActiveStep((current) => current + 1);
-        if (startTime !== null) {
-            //Set the "half" second step (when will you start taking the pill
-            //as null so when the user goes back, it shows up again
-            setStartToday(() => null);
-        }
-    }
+    const nextStep = () => {
+        if (activeStep === 0 && form.validateField('pillName').hasError) {
+            return;
+        } else if (activeStep === 1) {
+            if (startToday === false && form.validateField('startDate').hasError) {
+                    return;
+            }
 
-    function prevStep() {
-        setActiveStep((current) => current - 1);
-        if (startToday !== null) {
-            //Set the "half" second step (when will you start taking the pill
-            //as null so when the user goes forward, it shows up again
-            setStartToday(() => null);
+            setStartToday(null);
+        } else if (activeStep === 2) {
+            form.validateField('startTime');
+            form.validateField('frequency');
+            form.validateField('durationDays');
+            if (form.errors.startTime || form.errors.frequency || form.errors.durationDays) return;
         }
-    }
+        setActiveStep((current) => current + 1);
+    };
+
+    const prevStep = () => {
+        setActiveStep((current) => current - 1);
+    };
 
     const handleStartToday = () => {
-        setStartToday(true); // User starts today
-        setStartDate(new Date()); // Pre-fill today's date
+        setStartToday(true);
+        form.setFieldValue('startDate', new Date());
+        nextStep()
     };
 
     const handleStartLater = () => {
-        setStartToday(false); // User will select a date
+        setStartToday(false);
     };
 
-    const handleSubmit = () => {
-        console.log('Form Data:', formData);
-        onSave(formData); // Send data to parent component
+    const handleSubmit = (values: typeof form.values) => {
+        console.log('Form Data:', values);
+        onSave(values); // Send data to parent component
     };
 
     return (
         <Box>
             <Stepper active={activeStep} onStepClick={setActiveStep} breakpoint="sm" allowNextStepsSelect={false}>
-                {/* Step 1: Duration */}
+                {/* Step 1: Naming */}
                 <Stepper.Step label="Naming">
                     <Center>
                         <Box>
@@ -69,21 +97,19 @@ export function PillForm({ onSave }: PillFormProps) {
                                     size="md"
                                     label="Pill name"
                                     placeholder="Ibuprofen"
-                                    value={formData.pillName}
-                                    onChange={(e) => setFormData({ ...formData, pillName: e.target.value })}
+                                    {...form.getInputProps('pillName')}
                                 />
                             </Group>
                         </Box>
                     </Center>
-
                 </Stepper.Step>
 
-                {/* Step 2: Total Pills */}
+                {/* Step 2: When */}
                 <Stepper.Step label="When">
                     <Center>
                         <Box>
                             <Title order={4} mb="md">
-                                {"When will you start taking " + formData.pillName + "?"}
+                                {"When will you start taking " + form.values.pillName + "?"}
                             </Title>
                             <Group>
                                 {/* Ask if the user starts today */}
@@ -102,9 +128,8 @@ export function PillForm({ onSave }: PillFormProps) {
                                 {startToday === false && (
                                     <DatePicker
                                         placeholder="Select start date"
-                                        value={formData.startDate}
-                                        minDate={new Date(Date.now())}
-                                        onChange={(value) => setFormData({...formData, startDate: value})}
+                                        minDate={new Date()}
+                                        {...form.getInputProps('startDate')}
                                         mb="md"
                                     />
                                 )}
@@ -113,41 +138,37 @@ export function PillForm({ onSave }: PillFormProps) {
                     </Center>
                 </Stepper.Step>
 
-                {/* Step 3: Pill Details */}
+                {/* Step 3: Last Details */}
                 <Stepper.Step label="Last Details">
                     <Center>
                         <Box>
-
                             <Center>
                                 <TimeInput
                                     size="md"
-                                    value={formData.startTime}
                                     label="At what time will you start taking your pill?"
-                                    onChange={(e) => setFormData({...formData, startTime: e.target.value })}
+                                    {...form.getInputProps('startTime')}
                                 />
                             </Center>
                             <NativeSelect
                                 mt={20}
                                 size="md"
                                 label="Frequency"
-                                onChange={(event) => setFormData({...formData, frequency: event.currentTarget.value})}
-                                defaultValue={''}
-                                data={
-                                    [
-                                        { label: 'Select the frequency', value: '', disabled: true },
-                                        { label: 'Every 4 hours', value: '4 hours' },
-                                        { label: 'Every 8 hours', value: '8 hours' },
-                                        { label: 'Every 12 hours', value: '12 hours',},
-                                        { label: 'Every day', value: '1 day' },
-                                    ]}
+                                data={[
+                                    { label: 'Select the frequency', value: '', disabled: true },
+                                    { label: 'Every 4 hours', value: '4 hours' },
+                                    { label: 'Every 8 hours', value: '8 hours' },
+                                    { label: 'Every 12 hours', value: '12 hours' },
+                                    { label: 'Every day', value: '1 day' },
+                                ]}
+                                {...form.getInputProps('frequency')}
                             />
                             <NumberInput
                                 mt={20}
                                 size="md"
-                                label={"Number of days you will be taking " + formData.pillName}
+                                label={"Number of days you will be taking " + form.values.pillName}
                                 placeholder="7"
+                                {...form.getInputProps('durationDays')}
                             />
-
                         </Box>
                     </Center>
                 </Stepper.Step>
@@ -156,12 +177,7 @@ export function PillForm({ onSave }: PillFormProps) {
             {/* Navigation Buttons */}
             <Center>
                 <Box>
-                    <Flex
-                        justify="flex-start"
-                        align="flex-start"
-                        direction="row"
-                        wrap="wrap"
-                    >
+                    <Flex justify="flex-start" align="flex-start" direction="row" wrap="wrap">
                         <Group mt="xl">
                             {activeStep !== 0 && (
                                 <Button variant="default" onClick={prevStep}>
@@ -171,11 +187,10 @@ export function PillForm({ onSave }: PillFormProps) {
                             {activeStep !== 2 ? (
                                 <Button onClick={nextStep}>Next</Button>
                             ) : (
-                                <Button onClick={handleSubmit}>Save</Button>
+                                <Button onClick={() => form.onSubmit(handleSubmit)()}>Save</Button>
                             )}
                         </Group>
                     </Flex>
-
                 </Box>
             </Center>
         </Box>

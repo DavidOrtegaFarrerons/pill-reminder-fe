@@ -1,6 +1,6 @@
 import {Header} from "@/components/Header/Header";
 import {useState} from "react";
-import {Container} from "@mantine/core";
+import {Box, Center} from "@mantine/core";
 import {AddPillModal} from "@/components/Pill/PillModal/PillModal";
 import {NoPills} from "@/components/Pill/NoPills/NoPills";
 import {useNavigate, useNavigation} from "react-router-dom";
@@ -15,17 +15,27 @@ export function OverviewPage() {
     };
 
     return (
-        <Container size="lg">
-            {pills.length === 0 ? (
-                <NoPills onAddPill={handleAddPill} />
-            ) : (
-                <div>
-                    {/* Render list of pills here */}
-                </div>
-            )}
-
-            {/* AddPillModal */}
-            <AddPillModal opened={modalOpened} onClose={() => setModalOpened(false)} />
-        </Container>
+        <Center>
+            <Box
+                mt={50}
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    height: '100vh', // Full viewport height
+                    textAlign: 'center',
+                }}
+            >
+                {pills.length === 0 ? (
+                    <NoPills onAddPill={handleAddPill} />
+                ) : (
+                    <div>
+                        {/* Render list of pills here */}
+                    </div>
+                )}
+            </Box>
+        </Center>
     );
 }
