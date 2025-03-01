@@ -1,18 +1,36 @@
-import {Header} from "@/components/Header/Header";
-import {useState} from "react";
-import {Box, Center} from "@mantine/core";
-import {AddPillModal} from "@/components/Pill/PillModal/PillModal";
-import {NoPills} from "@/components/Pill/NoPills/NoPills";
-import {useNavigate, useNavigation} from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Box, Center, Loader } from "@mantine/core";
+import { NoPills } from "@/components/Pill/NoPills/NoPills";
+import { getAll } from "@/services/pillService";
+import PillsOverview from "@/components/Pill/Overview/PillsOverview";
 
 export function OverviewPage() {
-    const [pills, setPills] = useState<any[]>([]); // Replace `any` with your pill type
-    const [modalOpened, setModalOpened] = useState(false);
-    const navigate = useNavigate();
+    const [pills, setPills] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleAddPill = () => {
-        navigate('/add-pill')
+    const fetchPills = async () => {
+        setLoading(true);
+        try {
+            const data = await getAll();
+            setPills(data);
+        } catch (error) {
+            console.error("Error fetching pills:", error);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    useEffect(() => {
+        fetchPills();
+    }, []);
+
+    if (loading) {
+        return (
+            <Center>
+                <Loader />
+            </Center>
+        );
+    }
 
     return (
         <Center>
@@ -24,16 +42,14 @@ export function OverviewPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     width: '100%',
-                    height: '100vh', // Full viewport height
+                    height: '100vh',
                     textAlign: 'center',
                 }}
             >
                 {pills.length === 0 ? (
-                    <NoPills onAddPill={handleAddPill} />
+                    <NoPills />
                 ) : (
-                    <div>
-                        {/* Render list of pills here */}
-                    </div>
+                    <PillsOverview pills={pills} onReload={fetchPills} />
                 )}
             </Box>
         </Center>

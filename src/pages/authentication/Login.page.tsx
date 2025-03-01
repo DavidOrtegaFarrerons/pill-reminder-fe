@@ -31,12 +31,11 @@ export function LoginPage() {
     })
     const handleSubmit = async (values: typeof form.values) => {
         setIsLoading(true)
-
         try {
             const data = await login(values.email, values.password)
             return navigate('/overview')
         } catch (error) {
-
+            console.log(error)
         } finally {
             setIsLoading(false)
         }
@@ -62,7 +61,7 @@ export function LoginPage() {
                     {...form.getInputProps('password')}
                 />
                 <Button fullWidth mt="xl" size="md" type="submit" loading={isLoading}>
-                    Register
+                    Login
                 </Button>
             </form>
             <Text ta="center" mt="md">

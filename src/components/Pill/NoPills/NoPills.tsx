@@ -1,10 +1,13 @@
 import { Box, Button, Text, Title, Center } from '@mantine/core';
+import {useNavigate} from "react-router-dom";
 
-interface EmptyStateProps {
-    onAddPill: () => void;
-}
+export function NoPills() {
+    const navigate = useNavigate();
 
-export function NoPills({ onAddPill }: EmptyStateProps) {
+    const onAddPill = () => {
+        navigate('/add-pill')
+    }
+
     return (
         <Box
             sx={{

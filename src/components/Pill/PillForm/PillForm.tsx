@@ -15,26 +15,33 @@ import {
 import { DatePicker, TimeInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import '@mantine/dates/styles.css';
+import {create} from "@/services/pillService";
+import {useNavigate} from "react-router-dom";
 
-interface PillFormProps {
-    onSave: (data: any) => void;
+export interface PillFormProps {
+    "name": string,
+    "startDate": Date | null,
+    "frequency": string,
+    "durationDays": number,
+    "endDate": Date,
 }
 
-export function PillForm({ onSave }: PillFormProps) {
+export function PillForm() {
     const [activeStep, setActiveStep] = useState(0);
     const [startToday, setStartToday] = useState<boolean | null>(null);
+    const navigate = useNavigate();
 
     // Initialize useForm
     const form = useForm({
         initialValues: {
-            pillName: '',
+            name: '',
             startDate: null as Date | null,
-            startTime: null as Date | null,
+            startTime: '',
             frequency: '',
             durationDays: 0,
         },
         validate: {
-            pillName: (value) => (value.trim().length > 0 ? null : 'Pill name is required'),
+            name: (value) => (value.trim().length > 0 ? null : 'Pill name is required'),
             startDate: (value, values) => {
                 if (startToday === false && !value) return 'Start date is required';
                 return null;
@@ -46,7 +53,7 @@ export function PillForm({ onSave }: PillFormProps) {
     });
 
     const nextStep = () => {
-        if (activeStep === 0 && form.validateField('pillName').hasError) {
+        if (activeStep === 0 && form.validateField('name').hasError) {
             return;
         } else if (activeStep === 1) {
             if (startToday === false && form.validateField('startDate').hasError) {
@@ -77,9 +84,30 @@ export function PillForm({ onSave }: PillFormProps) {
         setStartToday(false);
     };
 
-    const handleSubmit = (values: typeof form.values) => {
-        console.log('Form Data:', values);
-        onSave(values); // Send data to parent component
+    const handleSubmit = async (values: typeof form.values) => {
+        if (!values.startDate) return;
+
+        const [hours, minutes] = values.startTime.split(":").map(Number);
+        values.startDate.setHours(hours, minutes, 0, 0) //Put start date and time together
+
+        const endDate = new Date(values.startDate);
+
+        endDate.setDate(endDate.getDate() + values.durationDays);
+
+        const pill: PillFormProps = {
+            name: form.values.name,
+            startDate: form.values.startDate,
+            frequency: form.values.frequency,
+            durationDays: form.values.durationDays,
+            endDate: endDate
+        }
+
+        try {
+            await create(pill)
+            navigate('/overview')
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (
@@ -97,7 +125,7 @@ export function PillForm({ onSave }: PillFormProps) {
                                     size="md"
                                     label="Pill name"
                                     placeholder="Ibuprofen"
-                                    {...form.getInputProps('pillName')}
+                                    {...form.getInputProps('name')}
                                 />
                             </Group>
                         </Box>
@@ -109,7 +137,7 @@ export function PillForm({ onSave }: PillFormProps) {
                     <Center>
                         <Box>
                             <Title order={4} mb="md">
-                                {"When will you start taking " + form.values.pillName + "?"}
+                                {"When will you start taking " + form.values.name + "?"}
                             </Title>
                             <Group>
                                 {/* Ask if the user starts today */}
@@ -165,7 +193,7 @@ export function PillForm({ onSave }: PillFormProps) {
                             <NumberInput
                                 mt={20}
                                 size="md"
-                                label={"Number of days you will be taking " + form.values.pillName}
+                                label={"Number of days you will be taking " + form.values.name}
                                 placeholder="7"
                                 {...form.getInputProps('durationDays')}
                             />
