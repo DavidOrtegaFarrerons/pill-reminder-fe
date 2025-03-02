@@ -4,28 +4,24 @@ import { useDisclosure } from '@mantine/hooks';
 import { MantineLogo } from '@mantinex/mantine-logo';
 import classes from './Header.module.css';
 import {ProfileIcon} from "@/components/ProfileIcon/ProfileIcon";
+import {useNavigate} from "react-router-dom";
 
 const links = [
-    { link: '/about', label: 'Features' },
-    { link: '/pricing', label: 'Pricing' },
-    { link: '/learn', label: 'Learn' },
-    { link: '/community', label: 'Community' },
+    { link: '/add-pill', label: 'Add new Pill' },
+    { link: '/overview', label: 'Overview' },
+    { link: '/history', label: 'Pill History' },
 ];
 
 export function Header() {
     const [opened, { toggle }] = useDisclosure(false);
-    const [active, setActive] = useState(links[0].link);
+    const [active, setActive] = useState(links[1].link);
 
     const items = links.map((link) => (
         <a
             key={link.label}
             href={link.link}
             className={classes.link}
-            data-active={active === link.link || undefined}
-            onClick={(event) => {
-                event.preventDefault();
-                setActive(link.link);
-            }}
+            data-active={window.location.pathname === link.link || undefined}
         >
             {link.label}
         </a>

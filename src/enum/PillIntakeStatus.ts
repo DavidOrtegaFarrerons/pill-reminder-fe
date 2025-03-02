@@ -3,4 +3,5 @@ export enum PillIntakeStatus {
      ADJUSTED = 'adjusted',
      SKIPPED = 'skipped',
      PENDING = 'pending',
+     FINISHED = 'finished',
 }

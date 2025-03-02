@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {PillFormProps} from "@/components/Pill/PillForm/PillForm";
+import { notifications } from '@mantine/notifications';
 import {API_URL} from "@/constants/const";
 import {PillIntakeStatus} from "@/enum/PillIntakeStatus";
 
@@ -8,6 +8,7 @@ export async function take(id: number, status: PillIntakeStatus) {
         const response = await axios.put(`${API_URL}/pill-intake/${id}`, {
             'status': status
         });
+
     } catch (error) {
         if (axios.isAxiosError(error)) {
             throw new Error(error.response?.data?.message || 'Could not set pill intake as taken');

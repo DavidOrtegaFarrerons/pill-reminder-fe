@@ -1,15 +1,13 @@
 import {PillForm} from "@/components/Pill/PillForm/PillForm";
 import {Container} from "@mantine/core";
+import {CreatePillForm} from "@/components/Pill/CreatePillForm/CreatePillForm";
 
 export function AddPillPage() {
-    const handleSubmit = (data) => {
-        console.log(data)
-    }
     return (
         <Container
             p={50}
         >
-            <PillForm onSave={handleSubmit}/>
+            <CreatePillForm/>
         </Container>
 
     )

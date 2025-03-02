@@ -17,16 +17,10 @@ import { useForm } from '@mantine/form';
 import '@mantine/dates/styles.css';
 import {create} from "@/services/pillService";
 import {useNavigate} from "react-router-dom";
+import {notifications} from "@mantine/notifications";
+import {CreatePillFormProps} from "@/components/Pill/CreatePillForm/CreatePillForm.types";
 
-export interface PillFormProps {
-    "name": string,
-    "startDate": Date | null,
-    "frequency": string,
-    "durationDays": number,
-    "endDate": Date,
-}
-
-export function PillForm() {
+export function CreatePillForm() {
     const [activeStep, setActiveStep] = useState(0);
     const [startToday, setStartToday] = useState<boolean | null>(null);
     const navigate = useNavigate();
@@ -38,7 +32,7 @@ export function PillForm() {
             startDate: null as Date | null,
             startTime: '',
             frequency: '',
-            durationDays: 0,
+            durationDays: '',
         },
         validate: {
             name: (value) => (value.trim().length > 0 ? null : 'Pill name is required'),
@@ -85,25 +79,20 @@ export function PillForm() {
     };
 
     const handleSubmit = async (values: typeof form.values) => {
-        if (!values.startDate) return;
-
-        const [hours, minutes] = values.startTime.split(":").map(Number);
-        values.startDate.setHours(hours, minutes, 0, 0) //Put start date and time together
-
-        const endDate = new Date(values.startDate);
-
-        endDate.setDate(endDate.getDate() + values.durationDays);
-
-        const pill: PillFormProps = {
+        const pill: CreatePillFormProps = {
             name: form.values.name,
             startDate: form.values.startDate,
+            startTime: form.values.startTime,
             frequency: form.values.frequency,
-            durationDays: form.values.durationDays,
-            endDate: endDate
+            durationDays: parseInt(form.values.durationDays),
         }
 
         try {
             await create(pill)
+            notifications.show({
+                title: 'Pill created successfully!',
+                message: "You can now see your new pill in the overview",
+            });
             navigate('/overview')
         } catch (error) {
             console.log(error);

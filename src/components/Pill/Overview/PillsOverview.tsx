@@ -1,22 +1,17 @@
 import { useState } from "react";
-import { Container, Grid, Card, Text, Title, Badge, Group, Button, SegmentedControl, TextInput, Flex, Modal } from "@mantine/core";
-import { IconSearch, IconPill, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { Container, Grid, Card, Text, Title, Badge, Group, Button, SegmentedControl, TextInput, Flex, Modal, Drawer, Stack, Textarea } from "@mantine/core";
+import { IconSearch, IconPill, IconChevronLeft, IconChevronRight, IconTrash } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 import {take} from "@/services/pillIntakeService";
 import {PillIntakeStatus} from "@/enum/PillIntakeStatus";
-
-interface Pill {
-    id: number;
-    name: string;
-    startDate: string;
-    frequency: string;
-    nextPillTime: string;
-    taken?: boolean;
-    intakeId: number,
-    intakeStatus: PillIntakeStatus,
-    intakeTime: Date
-}
+import {notifications} from "@mantine/notifications";
+import {PillCard} from "@/components/Pill/PillCard/PillCard";
+import {Pill} from "@/types/pill";
+import {DatePickerInput, TimeInput} from "@mantine/dates";
+import {NativeSelect} from "@mantine/core";
+import {DatePicker} from "@mantine/dates";
+import {EditPillDrawer} from "@/components/Pill/EditPillDrawer/EditPillDrawer";
 
 export default function PillsOverview({ pills, onReload }: { pills: Pill[], onReload: () => void }) {
     dayjs.extend(isBetween);
@@ -24,22 +19,8 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const [modalOpen, setModalOpen] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedPill, setSelectedPill] = useState<Pill | null>(null);
-
-    console.log(pills)
-    // Filter pills based on date, search, and status
-    const filteredPills = pills.filter((pill) => {
-        const now = dayjs(date); // Current date
-        const nextPillTime = dayjs(pill.nextPillTime); // The scheduled time for the next pill
-        const isToday = now.isSame(nextPillTime, "day") && !now.isAfter(nextPillTime, "hour");
-        const isMissed = now.isAfter(nextPillTime, "hour");
-        const matchesSearch = pill.name.toLowerCase().includes(search.toLowerCase());
-
-        if (filter === "today") return isToday && matchesSearch;
-        if (filter === "missed") return isMissed && matchesSearch;
-
-        return matchesSearch;
-    });
 
     const handlePillTaken = async (pill: Pill) => {
         const now = dayjs();
@@ -48,7 +29,9 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
 
         if (isWithinTimeRange) {
             await take(pill.intakeId, PillIntakeStatus.TAKEN);
-            onReload(); // Reload parent data
+            // noinspection TypeScriptValidateTypes
+            notifications.show({ color: 'green', title: 'Pill Taken', message: 'You successfully took the pill.' });
+            onReload();
         } else {
             setSelectedPill(pill);
             setModalOpen(true);
@@ -58,10 +41,17 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
     const confirmPillTaken = async (status: PillIntakeStatus = PillIntakeStatus.TAKEN) => {
         if (selectedPill) {
             await take(selectedPill.intakeId, status);
+            // noinspection TypeScriptValidateTypes
+            notifications.show({ color: 'green', title: 'Pill Status Updated', message: 'Pill intake status has been updated.' });
             onReload();
             setModalOpen(false);
             setSelectedPill(null);
         }
+    };
+
+    const handleEditPill = (pill: Pill) => {
+        setSelectedPill(pill);
+        setDrawerOpen(true);
     };
 
     return (
@@ -94,22 +84,9 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
             </Flex>
 
             <Grid gutter="md">
-                {filteredPills.map((pill) => (
+                {pills.map((pill) => (
                     <Grid.Col key={pill.id} xs={12} sm={6} md={4} lg={3}>
-                        <Card shadow="md" radius="md" padding="md" withBorder>
-                            <Group position="apart">
-                                <IconPill size={24} />
-                                <Badge color="blue">{pill.frequency}</Badge>
-                            </Group>
-                            <Text weight={500} mt="sm">{pill.name}</Text>
-                            <Text size="sm" color="dimmed">
-                                {dayjs(pill.startDate).format("DD MMM YYYY")} - {dayjs(pill.endDate).format("DD MMM YYYY")}
-                            </Text>
-                            <Text size="sm" color="dimmed">Next Pill: {dayjs(pill.nextPillTime).format("HH:mm")}</Text>
-                            <Button fullWidth mt="md" onClick={() => handlePillTaken(pill)}>
-                                Pill Taken
-                            </Button>
-                        </Card>
+                        <PillCard pill={pill} currentDate={date} onPillTaken={handlePillTaken} onEditPill={handleEditPill} />
                     </Grid.Col>
                 ))}
             </Grid>
@@ -129,6 +106,7 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
                     </Button>
                 </Flex>
             </Modal>
+            <EditPillDrawer opened={drawerOpen} onClose={() => setDrawerOpen(false)} pill={selectedPill} onReload={() => onReload()}/>
         </Container>
     );
 }
