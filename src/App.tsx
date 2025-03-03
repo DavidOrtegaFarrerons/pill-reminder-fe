@@ -7,9 +7,16 @@ import axios from "axios";
 import '@mantine/notifications/styles.css';
 import {Notifications} from "@mantine/notifications";
 import {Header} from "@/components/Header/Header";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from "dayjs";
+
 
 axios.defaults.withCredentials = true;
 export default function App() {
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    dayjs.tz.setDefault("Europe/Madrid");
   return (
     <MantineProvider theme={theme}>
         <AppShell padding="md"
