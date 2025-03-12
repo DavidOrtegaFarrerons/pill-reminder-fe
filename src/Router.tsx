@@ -22,6 +22,10 @@ const router = createBrowserRouter([
     path: '/add-pill',
     element: <ProtectedRoute><AddPillPage /></ProtectedRoute>
   },
+  {
+    path: '*',
+    element: <ProtectedRoute><OverviewPage /></ProtectedRoute>
+  }
 
 ]);
 

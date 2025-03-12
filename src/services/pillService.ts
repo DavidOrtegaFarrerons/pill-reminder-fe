@@ -30,6 +30,20 @@ export async function update(id: number, values) {
     }
 }
 
+export async function remove(id: number) {
+    try {
+        const response = await axios.delete(`${API_URL}/pills/${id}`);
+
+        return response.data.message;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data?.message || 'Could not remove pill');
+        } else {
+            throw new Error('An unexpected error occurred');
+        }
+    }
+}
+
 export async function getAll() {
     try {
         const response = await axios.get(`${API_URL}/pills`);

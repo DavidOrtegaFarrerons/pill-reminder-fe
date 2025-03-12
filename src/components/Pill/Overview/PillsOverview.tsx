@@ -12,6 +12,7 @@ import {DatePickerInput, TimeInput} from "@mantine/dates";
 import {NativeSelect} from "@mantine/core";
 import {DatePicker} from "@mantine/dates";
 import {EditPillDrawer} from "@/components/Pill/EditPillDrawer/EditPillDrawer";
+import {remove} from "@/services/pillService";
 
 export default function PillsOverview({ pills, onReload }: { pills: Pill[], onReload: () => void }) {
     dayjs.extend(isBetween);
@@ -21,6 +22,7 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
     const [modalOpen, setModalOpen] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedPill, setSelectedPill] = useState<Pill | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     const handlePillTaken = async (pill: Pill) => {
         const now = dayjs();
@@ -54,6 +56,37 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
         setDrawerOpen(true);
     };
 
+    const handleDeletePill = (pill: Pill) => {
+        setSelectedPill(pill);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDeletePill = async () => {
+        if (selectedPill) {
+            await remove(selectedPill.id);
+
+            notifications.show({
+                color: "red",
+                title: "Pill Deleted",
+                message: `${selectedPill.name} has been removed.`,
+            });
+
+            onReload();
+            setDeleteModalOpen(false);
+            setSelectedPill(null);
+        }
+    };
+
+    const filteredPills = pills.filter((pill) => {
+        const pillTime = dayjs(pill.nextPillTime);
+        const isToday = pillTime.isSame(date, 'day');
+        const isMissed = pillTime.isBefore(dayjs()) && pill.intakeStatus !== PillIntakeStatus.TAKEN;
+
+        if (filter === "today") return isToday;
+        if (filter === "missed") return isMissed;
+        return true;
+    });
+
     return (
         <Container size="lg" py="md">
             <Group position="apart" mb="md">
@@ -77,16 +110,16 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
                     onChange={(e) => setSearch(e.currentTarget.value)}
                 />
                 <SegmentedControl
-                    data={[{ label: "All", value: "all" }, { label: "Upcoming", value: "today" }, { label: "Missed", value: "missed" }]}
+                    data={[{ label: "All", value: "all" }, { label: "Today", value: "today" }, { label: "Missed", value: "missed" }]}
                     value={filter}
                     onChange={setFilter}
                 />
             </Flex>
 
             <Grid gutter="md">
-                {pills.map((pill) => (
+                {filteredPills.map((pill) => (
                     <Grid.Col key={pill.id} xs={12} sm={6} md={4} lg={3}>
-                        <PillCard pill={pill} currentDate={date} onPillTaken={handlePillTaken} onEditPill={handleEditPill} />
+                        <PillCard pill={pill} currentDate={date} onPillTaken={handlePillTaken} onEditPill={handleEditPill} onDeletePill={handleDeletePill} />
                     </Grid.Col>
                 ))}
             </Grid>
@@ -107,6 +140,17 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
                 </Flex>
             </Modal>
             <EditPillDrawer opened={drawerOpen} onClose={() => setDrawerOpen(false)} pill={selectedPill} onReload={() => onReload()}/>
+            <Modal
+                opened={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                title="Confirm Deletion"
+            >
+                <Text>Are you sure you want to delete {selectedPill?.name}? This will also delete all the information of times you have taken this pill.</Text>
+                <Flex mt="md" gap="md">
+                    <Button color="red" onClick={confirmDeletePill}>Yes, Delete</Button>
+                    <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
+                </Flex>
+            </Modal>
         </Container>
     );
 }

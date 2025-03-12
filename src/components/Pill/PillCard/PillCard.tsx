@@ -1,5 +1,5 @@
 import { Card, Group, Text, Badge, Button, ActionIcon, Tooltip, Stack, Divider } from "@mantine/core";
-import { IconPill, IconEdit, IconClock, IconAlertCircle } from "@tabler/icons-react";
+import { IconPill, IconEdit, IconClock, IconAlertCircle, IconTrash } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { Pill } from "@/types/pill";
 
@@ -8,10 +8,11 @@ interface PillCardProps {
     currentDate: Date;
     onPillTaken: (pill: Pill) => void;
     onEditPill?: (pill: Pill) => void;
+    onDeletePill?: (pill: Pill) => void;
 }
 
-export function PillCard({ pill, currentDate, onPillTaken, onEditPill }: PillCardProps) {
-    const isPillMissed = dayjs(currentDate).isAfter(pill.nextPillTime, "hour");
+export function PillCard({ pill, currentDate, onPillTaken, onEditPill, onDeletePill }: PillCardProps) {
+    const isPillMissed = dayjs(currentDate).isAfter(pill.nextPillTime);
 
     return (
         <Card shadow="lg" radius="md" padding="lg" withBorder style={{ color: '#e0e0e0' }}>
@@ -28,6 +29,16 @@ export function PillCard({ pill, currentDate, onPillTaken, onEditPill }: PillCar
                         size="lg"
                     >
                         <IconEdit size={20} />
+                    </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Delete Pill" withArrow>
+                    <ActionIcon
+                        color="red"
+                        variant="filled"
+                        onClick={() => onDeletePill?.(pill)}
+                        size="lg"
+                    >
+                        <IconTrash size={20} />
                     </ActionIcon>
                 </Tooltip>
             </Group>
@@ -50,7 +61,7 @@ export function PillCard({ pill, currentDate, onPillTaken, onEditPill }: PillCar
                 <Group spacing="xs">
                     <IconClock size={16} color="#4dabf7" />
                     <Text size="sm" color="#e0e0e0">
-                        Next Pill: {dayjs(pill.nextPillTime).format("HH:mm")}
+                        Next Pill: {dayjs(pill.nextPillTime).format("D MMM YYYY: HH:mm")}
                     </Text>
                 </Group>
             </Stack>

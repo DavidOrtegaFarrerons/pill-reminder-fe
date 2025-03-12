@@ -19,6 +19,7 @@ import {create} from "@/services/pillService";
 import {useNavigate} from "react-router-dom";
 import {notifications} from "@mantine/notifications";
 import {CreatePillFormProps} from "@/components/Pill/CreatePillForm/CreatePillForm.types";
+import dayjs from "dayjs";
 
 export function CreatePillForm() {
     const [activeStep, setActiveStep] = useState(0);
@@ -40,7 +41,23 @@ export function CreatePillForm() {
                 if (startToday === false && !value) return 'Start date is required';
                 return null;
             },
-            startTime: (value) => (value ? null : 'Start time is required'),
+            startTime: (value) => {
+                if (!value) return 'Start time is required';
+                const currentTime = dayjs();
+                console.log(dayjs(form.values.startDate));
+                console.log(currentTime);
+                console.log(dayjs(form.values.startDate).isSame(currentTime, "day"));
+                if (dayjs(form.values.startDate).isSame(currentTime, "day")) {
+                    const [hours, minutes] = value.split(":").map(Number);
+                    const selectedTime = dayjs().hour(hours).minute(minutes).second(0);
+
+                    if (selectedTime.isBefore(currentTime, "minute")) {
+                        return "Start time cannot be in the past";
+                    }
+                }
+
+                return null;
+            },
             frequency: (value) => (value ? null : 'Frequency is required'),
             durationDays: (value) => (value > 0 ? null : 'Duration must be greater than 0'),
         },
