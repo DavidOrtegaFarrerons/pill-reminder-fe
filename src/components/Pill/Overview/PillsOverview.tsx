@@ -16,7 +16,6 @@ import {remove} from "@/services/pillService";
 
 export default function PillsOverview({ pills, onReload }: { pills: Pill[], onReload: () => void }) {
     dayjs.extend(isBetween);
-    const [date, setDate] = useState(new Date());
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("all");
     const [modalOpen, setModalOpen] = useState(false);
@@ -79,11 +78,15 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
 
     const filteredPills = pills.filter((pill) => {
         const pillTime = dayjs(pill.nextPillTime);
-        const isToday = pillTime.isSame(date, 'day');
+        const isToday = pillTime.isSame(dayjs(), 'day');
         const isMissed = pillTime.isBefore(dayjs()) && pill.intakeStatus !== PillIntakeStatus.TAKEN;
+        const matchesSearch = pill.name.toLowerCase().includes(search.toLowerCase());
+
+        if (!matchesSearch) return false;
 
         if (filter === "today") return isToday;
         if (filter === "missed") return isMissed;
+
         return true;
     });
 
@@ -91,15 +94,6 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
         <Container size="lg" py="md">
             <Group position="apart" mb="md">
                 <Title order={2}>Your Pills</Title>
-                <Group>
-                    <Button variant="default" onClick={() => setDate(dayjs(date).subtract(1, "day").toDate())}>
-                        <IconChevronLeft size={18} />
-                    </Button>
-                    <Text weight={600}>{dayjs(date).format("DD MMMM YYYY")}</Text>
-                    <Button variant="default" onClick={() => setDate(dayjs(date).add(1, "day").toDate())}>
-                        <IconChevronRight size={18} />
-                    </Button>
-                </Group>
             </Group>
 
             <Flex mb="lg" gap="md" wrap="wrap">
@@ -119,7 +113,7 @@ export default function PillsOverview({ pills, onReload }: { pills: Pill[], onRe
             <Grid gutter="md">
                 {filteredPills.map((pill) => (
                     <Grid.Col key={pill.id} xs={12} sm={6} md={4} lg={3}>
-                        <PillCard pill={pill} currentDate={date} onPillTaken={handlePillTaken} onEditPill={handleEditPill} onDeletePill={handleDeletePill} />
+                        <PillCard pill={pill} currentDate={dayjs().toDate()} onPillTaken={handlePillTaken} onEditPill={handleEditPill} onDeletePill={handleDeletePill} />
                     </Grid.Col>
                 ))}
             </Grid>
