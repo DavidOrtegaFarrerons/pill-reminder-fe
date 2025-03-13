@@ -4,6 +4,7 @@ import {LoginPage} from "@/pages/authentication/Login.page";
 import {RegisterPage} from "@/pages/authentication/Register.page";
 import {ProtectedRoute} from "@/components/ProtectedRoute/ProtectedRoute";
 import {AddPillPage} from "@/pages/AddPill.page";
+import {ProfilePage} from "@/pages/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />
+  },
+  {
+    path: '/profile',
+    element: <ProfilePage />
   },
   {
     path: '/overview',

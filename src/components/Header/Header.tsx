@@ -1,28 +1,20 @@
-import { useState } from 'react';
-import { Burger, Container, Group } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { MantineLogo } from '@mantinex/mantine-logo';
-import classes from './Header.module.css';
-import {ProfileIcon} from "@/components/ProfileIcon/ProfileIcon";
-import {useNavigate} from "react-router-dom";
+import { Burger, Container, Group, Button } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { MantineLogo } from "@mantinex/mantine-logo";
+import { useNavigate } from "react-router-dom";
+import classes from "./Header.module.css";
 
 const links = [
-    { link: '/add-pill', label: 'Add new Pill' },
-    { link: '/overview', label: 'Overview' },
-    { link: '/history', label: 'Pill History' },
+    { link: "/add-pill", label: "Add new Pill" },
+    { link: "/overview", label: "Overview" },
+    { link: "/history", label: "Pill History" },
 ];
 
-export function Header() {
+export function Header({ name }: { name: string | null }) {
     const [opened, { toggle }] = useDisclosure(false);
-    const [active, setActive] = useState(links[1].link);
 
     const items = links.map((link) => (
-        <a
-            key={link.label}
-            href={link.link}
-            className={classes.link}
-            data-active={window.location.pathname === link.link || undefined}
-        >
+        <a key={link.label} href={link.link} className={classes.link}>
             {link.label}
         </a>
     ));
@@ -34,9 +26,12 @@ export function Header() {
                 <Group gap={5} visibleFrom="xs">
                     {items}
                 </Group>
-
                 <Burger opened={opened} onClick={toggle} hiddenFrom="xs" size="sm" />
-                <ProfileIcon name={"David"}/>
+                <Group>
+                    <a href="/profile">
+                        <Button size="xs" variant="outline">Profile</Button>
+                    </a>
+                </Group>
             </Container>
         </header>
     );

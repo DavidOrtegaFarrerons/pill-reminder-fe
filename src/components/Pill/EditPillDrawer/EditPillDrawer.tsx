@@ -43,8 +43,12 @@ export function EditPillDrawer({ opened, onClose, pill, onReload }: PillEditDraw
             form.setValues({
                 name: pill.name,
                 startDate: new Date(pill.startDate),
-                startTime: dayjs(pill.startDate).hour() + ":" + dayjs(pill.startDate).minute(),
+                startTime: dayjs(pill.startDate).hour().toString().padStart(2, '0') +
+                    ":" +
+                    dayjs(pill.startDate).minute().toString().padStart(2, '0'),
+
                 frequency: pill.frequency,
+                durationDays: dayjs(pill.endDate).diff(dayjs(pill.startDate), 'day')
             });
         }
     }, [pill]);
@@ -92,7 +96,6 @@ export function EditPillDrawer({ opened, onClose, pill, onReload }: PillEditDraw
                     <NumberInput
                         mt={20}
                         label={"Number of days you will be taking " + form.values.name}
-                        placeholder="7"
                         {...form.getInputProps('durationDays')}
                     />
                     <Button type="submit" mt={20}>Update pill information</Button>

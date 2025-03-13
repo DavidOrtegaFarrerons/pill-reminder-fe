@@ -10,6 +10,8 @@ import {Header} from "@/components/Header/Header";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import dayjs from "dayjs";
+import {useLocation} from "react-router-dom";
+import {useEffect, useState} from "react";
 
 
 axios.defaults.withCredentials = true;
@@ -17,6 +19,7 @@ export default function App() {
     dayjs.extend(utc);
     dayjs.extend(timezone);
     dayjs.tz.setDefault("Europe/Madrid");
+
   return (
     <MantineProvider theme={theme}>
         <AppShell padding="md"

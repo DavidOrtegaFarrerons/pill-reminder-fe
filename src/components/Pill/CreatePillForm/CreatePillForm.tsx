@@ -200,7 +200,6 @@ export function CreatePillForm() {
                                 mt={20}
                                 size="md"
                                 label={"Number of days you will be taking " + form.values.name}
-                                placeholder="7"
                                 {...form.getInputProps('durationDays')}
                             />
                         </Box>

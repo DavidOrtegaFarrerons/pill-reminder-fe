@@ -10,13 +10,14 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form'
 import {AuthenticationImage} from "@/components/AuthenticationImage/AuthenticationImage";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {useState} from "react";
 import {register} from "@/services/authService";
 
 export function RegisterPage() {
 
     const [isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigate();
 
     const form = useForm({
         mode: 'uncontrolled',
@@ -36,7 +37,7 @@ export function RegisterPage() {
 
          try {
             const data = await register(values.name, values.email, values.password)
-             console.log("Registered successfully ", data)
+             navigate('/login');
          } catch (error) {
 
          } finally {
