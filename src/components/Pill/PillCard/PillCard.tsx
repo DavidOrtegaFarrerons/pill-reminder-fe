@@ -15,7 +15,7 @@ export function PillCard({ pill, currentDate, onPillTaken, onEditPill, onDeleteP
     const isPillMissed = dayjs(currentDate).isAfter(pill.nextPillTime);
 
     return (
-        <Card shadow="lg" radius="md" padding="lg" withBorder style={{ color: '#e0e0e0' }}>
+        <Card shadow="lg" radius="md" padding="lg" withBorder style={{ colorm: '#e0e0e0' }}>
             <Group position="apart" mb="xs">
                 <Group spacing="xs">
                     <IconPill size={28} style={{ color: '#4dabf7' }} />

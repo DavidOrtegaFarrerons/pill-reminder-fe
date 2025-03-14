@@ -21,7 +21,7 @@ export default function App() {
     dayjs.tz.setDefault("Europe/Madrid");
 
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} forceColorScheme="dark">
         <AppShell padding="md"
         >
             <AppShell.Header><Header/></AppShell.Header>
