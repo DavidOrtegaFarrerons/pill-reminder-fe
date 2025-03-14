@@ -13,7 +13,6 @@ export function HistoryPage() {
         try {
             const data = await getHistory();
             setPills(data);
-            console.log(data);
         } catch (error) {
             console.error("Error fetching pills:", error);
         } finally {

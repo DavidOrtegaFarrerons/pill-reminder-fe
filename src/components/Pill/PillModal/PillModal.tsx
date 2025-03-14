@@ -9,7 +9,6 @@ interface AddPillModalProps {
 
 export function AddPillModal({ opened, onClose }: AddPillModalProps) {
     const handleSave = (data: any) => {
-        console.log('Data to save:', data);
         onClose(); // Close the modal after saving
     };
 

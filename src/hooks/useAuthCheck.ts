@@ -11,8 +11,6 @@ function useAuthCheck() {
                 const response = await axios.get('http://localhost:8080/api/check-auth', {
                 });
 
-                console.log(response);
-
                 if (response.data.isAuthenticated) {
                     setIsAuthenticated(true);
                     setUser(response.data.user);

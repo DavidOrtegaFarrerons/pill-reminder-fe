@@ -44,9 +44,6 @@ export function CreatePillForm() {
             startTime: (value) => {
                 if (!value) return 'Start time is required';
                 const currentTime = dayjs();
-                console.log(dayjs(form.values.startDate));
-                console.log(currentTime);
-                console.log(dayjs(form.values.startDate).isSame(currentTime, "day"));
                 if (dayjs(form.values.startDate).isSame(currentTime, "day")) {
                     const [hours, minutes] = value.split(":").map(Number);
                     const selectedTime = dayjs().hour(hours).minute(minutes).second(0);
